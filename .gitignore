@@ -5,3 +5,8 @@ python/dist
 *.egg-info*
 
 *.sw*
+
+# Ignore built add-on information
+benchbot_addons/*
+!benchbot_addons/__init__.py
+!benchbot_addons/manager.py
