@@ -1,10 +1,12 @@
 # Python manager for BenchBot Add-ons
+import importlib
 import json
 import re
 import requests
 import os
 from shutil import rmtree
 from subprocess import PIPE, run
+import sys
 import yaml
 
 DEFAULT_INSTALL_LOCATION = '.'
