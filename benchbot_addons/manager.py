@@ -23,7 +23,7 @@ KEY_FILE_PATH = '_file_path'
 HASH_SHORT = 8
 
 SUPPORTED_TYPES = [
-    'environments', 'evaluation_methods', 'examples', 'formats',
+    'batches', 'environments', 'evaluation_methods', 'examples', 'formats',
     'ground_truths', 'robots', 'tasks'
 ]
 
