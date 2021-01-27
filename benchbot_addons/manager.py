@@ -77,6 +77,8 @@ def env_name(env_string):
 
 
 def env_string(envs_data):
+    if type(envs_data) != list:
+        envs_data = [envs_data]
     return "%s:%s" % (envs_data[0]['name'], ":".join(
         str(e['variant']) for e in envs_data))
 
@@ -89,16 +91,15 @@ def exists(type_string, name_value_tuples):
     return get_match(type_string, name_value_tuples) is not None
 
 
-def find_all(type_string):
+def find_all(type_string, extension='ya?ml'):
     _validate_type(type_string)
     return [
-        s
-        for s in run('find . -regex \'.*/%s/[^/]*ya?ml\' | xargs readlink -f' %
-                     type_string,
-                     shell=True,
-                     cwd=_install_location(),
-                     stdout=PIPE,
-                     stderr=PIPE).stdout.decode('utf8').strip().splitlines()
+        s for s in run('find . -regex \'.*/%s/[^/]*%s\' | xargs readlink -f' %
+                       (type_string, extension),
+                       shell=True,
+                       cwd=_install_location(),
+                       stdout=PIPE,
+                       stderr=PIPE).stdout.decode('utf8').strip().splitlines()
     ]
 
 
@@ -155,7 +156,7 @@ def load_functions(data, key='functions'):
 
 def load_yaml(filename):
     with open(filename, 'r') as f:
-        return {**{KEY_FILE_PATH: filename}, **yaml.safe_load(f)}
+        return {KEY_FILE_PATH: filename, **yaml.safe_load(f)}
 
 
 def load_yaml_list(filenames_list):
