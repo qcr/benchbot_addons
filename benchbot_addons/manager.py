@@ -16,6 +16,8 @@ ENV_STATE_PATH = 'STATE_PATH'
 FILENAME_DEPENDENCIES = '.dependencies'
 FILENAME_REMOTE = '.remote'
 
+KEY_FILE_PATH = '_file_path'
+
 HASH_SHORT = 8
 
 SUPPORTED_TYPES = [
@@ -72,6 +74,11 @@ def env_name(env_string):
     return re.sub(':[^:]*$', '', env_string)
 
 
+def env_string(envs_data):
+    return "%s:%s" % (envs_data[0]['name'], ":".join(
+        str(e['variant']) for e in envs_data))
+
+
 def env_variant(env_string):
     return re.sub('^.*:', '', env_string)
 
@@ -93,13 +100,12 @@ def find_all(type_string):
     ]
 
 
-def get_match(type_string, name_value_tuples):
+def get_match(type_string, name_value_tuples, return_data=False):
     _validate_type(type_string)
     for fn in find_all(type_string):
-        with open(fn, 'r') as f:
-            d = yaml.safe_load(f)
-            if all(str(d[nv[0]]) == nv[1] for nv in name_value_tuples):
-                return fn
+        d = load_yaml(fn)
+        if all(str(d[nv[0]]) == nv[1] for nv in name_value_tuples):
+            return d if return_data else fn
     return None
 
 
@@ -122,7 +128,7 @@ def get_state():
 
 
 def get_value(filename, field_name):
-    return yaml.safe_load(open(filename)).get(field_name, None)
+    return load_yaml(filename).get(field_name, None)
 
 
 def get_value_by_name(type_string, name, field_name):
@@ -130,6 +136,28 @@ def get_value_by_name(type_string, name, field_name):
         get_match(type_string, [("name", env_name(name)),
                                 ("variant", env_variant(name))] if type_string
                   == "environments" else [("name", name)]), field_name)
+
+
+def load_functions(data, key='functions'):
+    if key not in data:
+        return {}
+    sys.path.insert(0, os.path.dirname(data[KEY_FILE_PATH]))
+    ret = {
+        k: getattr(importlib.import_module(re.sub('\.[^\.]*$', "", v)),
+                   re.sub('^.*\.', "", v))
+        for k, v in data[key].items()
+    }
+    del sys.path[0]
+    return ret
+
+
+def load_yaml(filename):
+    with open(filename, 'r') as f:
+        return {**{KEY_FILE_PATH: filename}, **yaml.safe_load(f)}
+
+
+def load_yaml_list(filenames_list):
+    return [load_yaml(f) for f in filenames_list]
 
 
 def install_addon(name):
