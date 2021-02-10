@@ -99,34 +99,106 @@ Here are the technical details of what's expected in add-on content. The BenchBo
 
 An add-on package has the following structure (technically none of the files are required, they just determine what functionality your add-on includes):
 
-| Filename        | Description                                                                                                                                                                       |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.dependencies` | A list of add-on packages that must be installed with this package. Packages are specified by their GitHub identifier (i.e. `github_username/repository_name`), with one per line |
+| Filename        | Description                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.dependencies` | A list of add-on packages that must be installed with this package. Packages are specified by their GitHub identifier (i.e. `github_username/repository_name`), with one per line                                                                                                                                                                                                   |
+| `.remote`       | Specifies content that should be installed from a remote URL, rather than residing in this repository. A remote resource is specified as a URL and target directory separated by a space. One resource is specified per line. The add-ons manager will fetch the URL specified, and extract the contents to the target directory (e.g. `http://myhost/my_content.zip environments`) |
+| `<directory>/`  | Each named directory corresponds to an add-on type described below. The directory will be ignored if its name doesn't exactly match any of those below.                                                                                                                                                                                                                             |
 
 ### Batch add-ons
 
 A YAML file, that must exist in a folder called `batches` in the root of the add-on package (e.g. `batches/my_batch.yaml`).
 
+The following keys are supported for batch add-ons:
+
+| Key              | Required | Description                                                                           |
+| ---------------- | -------- | ------------------------------------------------------------------------------------- |
+| `'name'`         | Yes      | A string used to refer to this batch (must be unique!).                               |
+| `'environments'` | Yes      | A list of environment strings of the format `'name':'variant'` (e.g. `'miniroom:1'`). |
+
 ### Environment add-ons
 
 A YAML file, that must exist in a folder called `environments` in the root of the add-on package (e.g. `environments/my_environment.yaml`).
+
+The following keys are supported for environment add-ons:
+
+| Key                  | Required | Description                                                                                                                                                                                                                                                                                                   |
+| -------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'name'`             | Yes      | A string used to refer to this environment's name (the `('name', 'variant')` pair must be unique!).                                                                                                                                                                                                           |
+| `'variant'`          | Yes      | A string used to refer to this environment's variant (the `('name', 'variant')` pair must be unique!).                                                                                                                                                                                                        |
+| `'type'`             | Yes      | A string describing the type of this environment (`'sim_unreal'` & `'real'` are the only values currently used).                                                                                                                                                                                              |
+| `'map_path'`         | Yes      | A path to the map for this environment, which will be used by either the simulator or real world system to load the environment.                                                                                                                                                                              |
+| `'start_pose'`       | Yes      | The start pose of the robot that will be provided to users through the [BenchBot API](https://github.com/roboticvisionorg/benchbot_api). The pose is specified as a list of 7 numbers: quarternion_x, quarternion_y, quarternion_z, quarternion_w, position_x, position_y, position_z. This must be accurate! |
+| `'trajectory_poses'` | No       | A list of poses for the robot to traverse through in order. Each pose is a list of 7 numbers: quarternion_x, quarternion_y, quarternion_z, quarternion_w, position_x, position_y, position_z. This environment won't be usable for tasks that use the `'move_next'` action if this parameter isn't provided.  |
+| `'robots'`           | No       | A list of supported names for robot that are supported in this environment. If this list isn't included, all robots with the same `'type'` as this environment will be able to run.                                                                                                                           |
+| `'object_labels'`    | No       | A list of labels for the objects that exist in the scene. Can be used with simulated sensors like segmentation sensors.                                                                                                                                                                                       |
 
 ### Evaluation method add-ons
 
 A YAML file, that must exist in a folder called `evaluation_methods` in the root of the add-on package (e.g. `evaluation_methods/my_evaluation_method.yaml`).
 
+The following keys are supported for evaluation method add-ons:
+
+| Key                            | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'name'`                       | Yes      | A string used to refer to this evaluation method (must be unique!)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `'valid_result_formats'`       | Yes      | List of strings denoting results formats supported by the evaluation method. Ideally these format definitions should also be installed.                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `'valid_ground_truth_formats'` | Yes      | List of strings denoting ground truth formats supported by the evaluation method. Ideally these format definitions should also be installed.                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `'functions'`                  | Yes      | Dictionary of named functions provided by the evaluation method. The named methods are key value pairs where the key is the function name, and the value is a string describing how the function can be imported with Python. For example, `evaluate: "omq.evaluate_method"` declares a function called `'evaluate'` that is imported via `from omq import evaluate_method`. Likewise `"omq.submodule.combine_method"` translates to `from omq.submodule import combine_method`. See below for the list of functions expected for evaluation methods. |
+| `'description'`                | No       | A string describing what the evaluation method is and how it works. Should be included if you want users to understand where your method can be used.                                                                                                                                                                                                                                                                                                                                                                                                 |
+
+Evaluation methods expect the following named functions:
+
+| Name         | Signature                                        | Usage                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'evaluate'` | `fn(dict: results, list: ground_truths) -> dict` | Evaluates the performance using a `results` dictionary, and returns a dictionary of containing the scores. It also takes a list of dictionaries containing each ground truth that will be used in evaluation. |
+| `'combine'`  | `fn(list: scores) -> dict`                       | Takes a list of `scores` dictionaries, and returns an aggregate score. If this method isn't declared, [`benchbot_eval`](https://github.com/roboticvisionorg/benchbot_eval) won't return a summary score.      |
+
 ### Format definition add-ons
 
 A YAML file, that must exist in a folder called `formats` in the root of the add-on package (e.g. `formats/my_format.yaml`).
+
+The following keys are supported for format add-ons:
+
+| Key             | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| --------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'name'`        | Yes      | A string used to refer to this format (must be unique!)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `'functions'`   | Yes      | Dictionary of named functions for use with this format. The named methods are key value pairs where the key is the function name, and the value is a string describing how the function can be imported with Python. For example, `create: "object_map.create_empty"` declares a function called `'create'` that is imported via `from object_map import create_empty`. Likewise `"object_map.submodule.validate"` translates to `from object_map.submodule import validate`. See below for the list of functions expected for format definitions. |
+| `'description'` | No       | A string describing what the format is and how it works. Should be included if you want users to understand what your format is supposed to capture.                                                                                                                                                                                                                                                                                                                                                                                               |
+
+Format definitions expect the following named functions:
+
+| Name         | Signature                    | Usage                                                                                                                                                                                               |
+| ------------ | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'create'`   | `fn() -> dict`               | Function that returns an empty instance of this format. As much as possible should be filled in to make it easy for users to create valid instances (especially when a format is used for results). |
+| `'validate'` | `fn(dict: instance) -> None` | Takes a proposed `instance` of this format and validates whether it meets the requirements. Will typically use a series of assert statements to confirm fields are valid.                           |
 
 ### Ground truth add-ons
 
 A JSON file, that must exist in a folder called `ground_truths` in the root of the add-on package (e.g. `ground_truths/my_ground_truth.json`).
 
+The following keys are supported for ground truth add-ons:
+
+| Key      | Required | Description                                                   |
+| -------- | -------- | ------------------------------------------------------------- |
+| `'name'` | Yes      | A string used to refer to this ground truth (must be unique!) |
+
 ### Robot add-ons
 
 A YAML file, that must exist in a folder called `robots` in the root of the add-on package (e.g. `robots/my_robot.yaml`).
 
+The following keys are supported for robot add-ons:
+
+| Key      | Required | Description                                            |
+| -------- | -------- | ------------------------------------------------------ |
+| `'name'` | Yes      | A string used to refer to this robot (must be unique!) |
+
 ### Task add-ons
 
 A YAML file, that must exist in a folder called `tasks` in the root of the add-on package (e.g. `tasks/my_task.yaml`).
+
+The following keys are supported for task add-ons:
+
+| Key      | Required | Description                                           |
+| -------- | -------- | ----------------------------------------------------- |
+| `'name'` | Yes      | A string used to refer to this task (must be unique!) |
