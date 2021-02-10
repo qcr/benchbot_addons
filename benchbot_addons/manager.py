@@ -293,7 +293,7 @@ def print_state():
 
     print("\nIf you would like to add your community-created add-on to the "
           "official list, please follow the\ninstructions here:\n\t"
-          "https://github.com/RoboticVisionOrg/benchbot/wiki/BenchBot-Add-ons")
+          "https://github.com/RoboticVisionOrg/benchbot-addons")
 
 
 def official_addons():
