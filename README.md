@@ -20,7 +20,7 @@ The list of currently supported types of add-ons are:
 
 See the sections below for details of how to interact with installed add-ons, how to create your own add-ons, and formalisation of what's required in an add-on.
 
-## Installing and Using the add-ons manager
+## Installing and using the add-ons manager
 
 In general, you won't use the add-ons manager directly. Instead you interact with the [BenchBot software stack](https://github.com/roboticvisionorg/benchbot), which uses the add-ons manager to manage and access add-ons.
 
@@ -91,4 +91,42 @@ Creating all add-ons is exactly the same process, the only difference is whether
 
 _**Note:** it's a good idea to only include one type of add-on per repository as it makes your add-on package more usable for others. It's not a hard rule though, so feel free to add multiple folders to your add-on if you require._
 
+Feel free to have a look at any of the [official add-ons](https://github.com/benchbot-addons) for help and examples of how to work with add-ons.
+
 ## Add-ons format specification
+
+Here are the technical details of what's expected in add-on content. The BenchBot system will assume these specifications are adhered to, and errors can be expected if you try to use add-ons that don't match the specifications.
+
+An add-on package has the following structure (technically none of the files are required, they just determine what functionality your add-on includes):
+
+| Filename        | Description                                                                                                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.dependencies` | A list of add-on packages that must be installed with this package. Packages are specified by their GitHub identifier (i.e. `github_username/repository_name`), with one per line |
+
+### Batch add-ons
+
+A YAML file, that must exist in a folder called `batches` in the root of the add-on package (e.g. `batches/my_batch.yaml`).
+
+### Environment add-ons
+
+A YAML file, that must exist in a folder called `environments` in the root of the add-on package (e.g. `environments/my_environment.yaml`).
+
+### Evaluation method add-ons
+
+A YAML file, that must exist in a folder called `evaluation_methods` in the root of the add-on package (e.g. `evaluation_methods/my_evaluation_method.yaml`).
+
+### Format definition add-ons
+
+A YAML file, that must exist in a folder called `formats` in the root of the add-on package (e.g. `formats/my_format.yaml`).
+
+### Ground truth add-ons
+
+A JSON file, that must exist in a folder called `ground_truths` in the root of the add-on package (e.g. `ground_truths/my_ground_truth.json`).
+
+### Robot add-ons
+
+A YAML file, that must exist in a folder called `robots` in the root of the add-on package (e.g. `robots/my_robot.yaml`).
+
+### Task add-ons
+
+A YAML file, that must exist in a folder called `tasks` in the root of the add-on package (e.g. `tasks/my_task.yaml`).
