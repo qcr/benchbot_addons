@@ -6,7 +6,19 @@
 
 The BenchBot Add-ons Manager allows you to use BenchBot with a wide array of additional content, and customise your installation to suite your needs. Semantic Scene Understanding not your thing? Install the Semantic Question Answering add-ons instead. Want to create your own content? Write some basic YAML files to make your own add-ons. Need to re-use existing content? Simply include a dependency on that add-on. Add-ons are all about making BenchBot whatever you need it to be&mdash;build a BenchBot for your research problems, exactly as you need it.
 
-Add-ons
+Add-ons come in a variety of types. Anything that you may need to customise for your own experiments or research, should be customisable through an add-on. If not, let us know, and we'll add more add-on enabled functionality to BenchBot!
+
+The list of currently supported types of add-ons are:
+
+- **batches**: a list of environments used for repeatable evaluation scores with the `benchbot_batch` script.
+- **environments**: simulated or real world environments that a task can be performed in, with a robot. Only [Isaac Sim](https://developer.nvidia.com/Isaac-sim) simulation is currently supported, but there is capacity to support other simulators. Please get in contact if you'd like to see another simulator in BenchBot!
+- **evaluation_methods**: a method for evaluating a set of formatted results, against a corresponding ground truth, and producing scores describing how well a result performed a given task.
+- **formats**: formalisation of a format for results or ground truth data, including helper functions.
+- **ground_truths**: ground truth data in a declared format, about a specific environment. Environments can have many different types of ground truths depending on what different task's require.
+- **robots**: a robot definition declaring the communication channels available to the BenchBot ecosystem. Both simulated and real world robots are supported, they just need to run ROS.
+- **tasks**: a task is something a robot may want to do, what observations and actions it has available, and how results should be reported.
+
+See the sections below for details of how to interact with installed add-ons, how to create your own add-ons, and formalisation of what's required in an add-on.
 
 ## Installing and Using the add-ons manager
 
@@ -18,7 +30,7 @@ The manager is a Python package if you do find you want to use it directly, and 
 u@pc:~$ pip install .
 ```
 
-The manager can then be imported and used to manage installation, loading, accessing, processing, and updating add-ons. Some of types of functionality are shown below:
+The manager can then be imported and used to manage installation, loading, accessing, processing, and updating of add-ons. Some samples of supported functionality are shown below:
 
 ```python
 from benchbot_addons import manager as bam
