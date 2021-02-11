@@ -16,6 +16,7 @@ ENV_INSTALL_LOCATION = 'INSTALL_LOCATION'
 ENV_STATE_PATH = 'STATE_PATH'
 
 FILENAME_DEPENDENCIES = '.dependencies'
+FILENAME_PYTHON_DEPENDENCIES = '.dependencies-python'
 FILENAME_REMOTE = '.remote'
 
 KEY_FILE_PATH = '_file_path'
@@ -272,6 +273,28 @@ def install_addons(string, remove_extras=False):
         # TODO remove any not in installed_list
         pass
     return installed_list
+
+
+def install_external_deps():
+    # Find all Python dependency files, & build one big list
+    state = get_state()
+    deps = []
+    for a in ([
+            _addon_path(_parse_name(k)[1],
+                        _parse_name(k)[2]) for k in state.keys()
+    ]):
+        fn = os.path.join(a, FILENAME_PYTHON_DEPENDENCIES)
+        if os.path.exists(fn):
+            with open(fn, 'r') as f:
+                deps.extend([l.strip() for l in f if l.strip()])
+
+    # Issue the pip install command
+    if deps:
+        pip_string = 'pip install %s' % " ".join(list(set(deps)))
+        print("Running the following pip install command:")
+        print("\t%s\n" % pip_string)
+        run(pip_string, shell=True)
+        print("\n\tDone.")
 
 
 def print_state():
