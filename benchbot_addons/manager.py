@@ -290,7 +290,7 @@ def install_external_deps():
 
     # Issue the pip install command
     if deps:
-        pip_string = 'pip install %s' % " ".join(list(set(deps)))
+        pip_string = 'pip3 install %s' % " ".join(list(set(deps)))
         print("Running the following pip install command:")
         print("\t%s\n" % pip_string)
         run(pip_string, shell=True)
