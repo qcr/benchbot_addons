@@ -275,7 +275,7 @@ def install_addons(string, remove_extras=False):
     return installed_list
 
 
-def install_external_deps():
+def install_external_deps(dry_mode=False):
     # Find all Python dependency files, & build one big list
     state = get_state()
     deps = []
@@ -289,12 +289,13 @@ def install_external_deps():
                 deps.extend([l.strip() for l in f if l.strip()])
 
     # Issue the pip install command
-    if deps:
-        pip_string = 'pip3 install %s' % " ".join(list(set(deps)))
+    pip_string = 'pip3 install %s' % " ".join(list(set(deps)))
+    if deps and not dry_mode:
         print("Running the following pip install command:")
         print("\t%s\n" % pip_string)
         run(pip_string, shell=True)
         print("\n\tDone.")
+    return pip_string if deps else ''
 
 
 def print_state():
