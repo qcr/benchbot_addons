@@ -241,6 +241,9 @@ def install_addon(name):
                     state[name]['remote'] = remote
                     state[name]['remote_target'] = target
                     dump_state(state)
+                    print("\tRemoving temporary copy ...")
+                    run('rm ".tmp.zip"', **cmd_args)
+                    print("\tRemoved.")
             else:
                 print("\tNo action - remote content is already installed.")
 
@@ -329,6 +332,24 @@ def official_addons():
                                  'Accept': 'application/vnd.github.v3+json'
                              }).json()
     return [d['full_name'] for d in repo_data]
+
+
+def outdated_addons():
+    state = get_state()
+    cmd_args = {
+        'shell': True,
+        'stdout': PIPE,
+        'stderr': PIPE,
+    }
+    outdated = []
+    for a in state.keys():
+        cwd = _addon_path(*_parse_name(a)[1:3])
+        if (run('git rev-parse HEAD', cwd=cwd, **
+                cmd_args).stdout.decode('utf8').strip() !=
+                run('git rev-parse origin/HEAD', cwd=cwd, **
+                    cmd_args).stdout.decode('utf8').strip()):
+            outdated.append(a)
+    return outdated
 
 
 def remove_addon(name):
