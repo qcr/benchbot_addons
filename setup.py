@@ -12,7 +12,7 @@ setup(name='benchbot_addons',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=find_packages(),
-      install_requires=[],
+      install_requires=['pyyaml', 'requests'],
       classifiers=(
           "Programming Language :: Python :: 2",
           "Programming Language :: Python :: 2.7",
