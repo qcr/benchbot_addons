@@ -36,10 +36,6 @@ def _abs_path(path):
         os.path.join(os.path.dirname(__file__), path)))
 
 
-def _addon_path(repo_user, repo_name):
-    return os.path.join(_install_location(), repo_user, repo_name)
-
-
 def _install_location():
     return _abs_path(
         os.environ.get(ENV_INSTALL_LOCATION, DEFAULT_INSTALL_LOCATION))
@@ -62,6 +58,10 @@ def _validate_type(type_string):
         raise ValueError(
             "Resource type '%s' is not one of the supported types:\n\t%s" %
             (type_string, SUPPORTED_TYPES))
+
+
+def addon_path(repo_user, repo_name):
+    return os.path.join(_install_location(), repo_user, repo_name)
 
 
 def dump_state(state):
@@ -166,7 +166,7 @@ def load_yaml_list(filenames_list):
 
 def install_addon(name):
     url, repo_user, repo_name, name = _parse_name(name)
-    install_path = _addon_path(repo_user, repo_name)
+    install_path = addon_path(repo_user, repo_name)
 
     print("Installing addon '%s' in '%s':" % (name, _install_location()))
 
@@ -283,8 +283,8 @@ def install_external_deps(dry_mode=False):
     state = get_state()
     deps = []
     for a in ([
-            _addon_path(_parse_name(k)[1],
-                        _parse_name(k)[2]) for k in state.keys()
+            addon_path(_parse_name(k)[1],
+                       _parse_name(k)[2]) for k in state.keys()
     ]):
         fn = os.path.join(a, FILENAME_PYTHON_DEPENDENCIES)
         if os.path.exists(fn):
@@ -343,7 +343,7 @@ def outdated_addons():
     }
     outdated = []
     for a in state.keys():
-        cwd = _addon_path(*_parse_name(a)[1:3])
+        cwd = addon_path(*_parse_name(a)[1:3])
         if (run('git rev-parse HEAD', cwd=cwd, **
                 cmd_args).stdout.decode('utf8').strip() !=
                 run('git rev-parse origin/HEAD', cwd=cwd, **
@@ -354,7 +354,7 @@ def outdated_addons():
 
 def remove_addon(name):
     url, repo_user, repo_name, name = _parse_name(name)
-    install_path = _addon_path(repo_user, repo_name)
+    install_path = addon_path(repo_user, repo_name)
     install_parent = os.path.dirname(install_path)
 
     # Confirm the addon exists
