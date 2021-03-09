@@ -66,6 +66,18 @@ def addon_path(repo_user, repo_name):
     return os.path.join(_install_location(), repo_user, repo_name)
 
 
+def dirty_addons():
+    dirty = []
+    for n in get_state().keys():
+        _, repo_user, repo_name, _ = _parse_name(n)
+        if (run('[[ -z $(git status -s --porcelain) ]]',
+                shell=True,
+                executable='/bin/bash',
+                cwd=addon_path(repo_user, repo_name)).returncode != 0):
+            dirty.append(n)
+    return dirty
+
+
 def dump_state(state):
     # State is a dictionary with:
     # - keys for each installed addon
