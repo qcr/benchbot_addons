@@ -19,9 +19,11 @@ FILENAME_DEPENDENCIES = '.dependencies'
 FILENAME_PYTHON_DEPENDENCIES = '.dependencies-python'
 FILENAME_REMOTE = '.remote'
 
+HASH_SHORT = 8
+
 KEY_FILE_PATH = '_file_path'
 
-HASH_SHORT = 8
+LOCAL_NAME = '.local/my_addons'
 
 SUPPORTED_TYPES = [
     'batches', 'environments', 'evaluation_methods', 'examples', 'formats',
@@ -162,6 +164,10 @@ def load_yaml(filename):
 
 def load_yaml_list(filenames_list):
     return [load_yaml(f) for f in filenames_list]
+
+
+def local_addon_path():
+    return addon_path(*LOCAL_NAME.split('/'))
 
 
 def install_addon(name):
