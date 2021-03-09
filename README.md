@@ -82,7 +82,7 @@ from benchbot_addons import manager as bam
 print(bam.local_addon_path())
 ```
 
-BenchBot expects add-on content to be in named folders that denote the type of content. For example, robots must be in a folder called `'robots'`, tasks in a folder called `'tasks'`, and so on. A list of valid content types is available via the `SUPPORTED_TYPES` field in the add-ons manager.
+BenchBot expects add-on content to be in named folders denoting the type of content. For example, robots must be in a folder called `'robots'`, tasks in a folder called `'tasks'`, and so on. A list of valid content types is available via the `SUPPORTED_TYPES` field in the add-ons manager.
 
 Below is an example of the process you would go through to create your own custom task locally:
 
@@ -99,9 +99,9 @@ Done. Your new custom task should now be available for use in your BenchBot syst
 
 ## Sharing your custom add-ons
 
-Custom add-on content can be grouped together into an add-on package, of which there are two different types: 'official' add-ons and third-party add-ons.
+Custom add-on content can be grouped together into an add-on package, of which there are two different types: 'official' and third-party.
 
-'Official' are add-on packages that we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-on packages through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
+'Official' packages are those we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-on packages through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
 
 Third-party add-on packages differ only in that we haven't looked at them, and they can be hosted anywhere on GitHub you please.
 
@@ -111,8 +111,8 @@ Creating all add-on packages is exactly the same process, the only difference is
 2. Add folders corresponding to the type of content your add-ons provide (i.e. an environments add-on has an `environments` directory at the root).
 3. Add YAML / JSON files for your content, and make sure they match the corresponding format specification from the section below
 4. Add in any extra content your add-on may require: Python files, simulator binaries, images, etc. (if your add-on gets too big for a Git repository, you can zip the content up, host it somewhere, and use the `.remote` metadata file described in the next section)
-5. Decide if your add-on is dependent on any others, and declare any dependencies in a `.dependencies` file
-6. Push everything up to git on your default branch
+5. Decide if your package has any dependencies, and declare them using the appropriate `.dependencies*` files
+6. Push everything up to GitHub on your default branch
 
 _**Note:** it's a good idea to only include one type of add-on per repository as it makes your add-on package more usable for others. It's not a hard rule though, so feel free to add multiple folders to your add-on if you require._
 
@@ -255,7 +255,3 @@ The following keys are supported for task add-ons:
 | `'description'`    | No       | A string describing what the task is, and how it works. Should be included if you want users to understand what challenges your task is trying to capture.                                                                  |
 | `'type'`           | No       | A string describing what robot / environment types are valid for this task. For example, a task that provides a magic image segmentation sensor would only be made available for `'sim_unreal'` type robots / environments. |
 | `'scene_count'`    | No       | Integer representing the number of scenes (i.e. environment variations required for a task). If omitted, a default value of 1 will be used for the task.                                                                    |
-
-```
-
-```
