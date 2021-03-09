@@ -72,15 +72,40 @@ bam.remove_addons()
 bam.remove_addon('benchbot-addons/ssu,benchbot-addons/sqa')
 ```
 
-## How to add your own add-ons
+## Creating your own add-on content
 
-There are two different types of add-ons: 'official' add-ons and third-party add-ons.
+Add-ons are designed to make it easy to add your own local content to a BenchBot installation. You can add your own local content to the "local add-ons" folder provided with your install. The location on your machine can be printed via the following:
 
-'Official' are add-ons that we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-ons through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
+```python
+from benchbot_addons import manager as bam
 
-Third-party add-ons only differ in that we haven't looked at them, and they can be hosted anywhere on GitHub you please.
+print(bam.local_addon_path())
+```
 
-Creating all add-ons is exactly the same process, the only difference is whether the repository is inside or outside of the [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation:
+BenchBot expects add-on content to be in named folders that denote the type of content. For example, robots must be in a folder called `'robots'`, tasks in a folder called `'tasks'`, and so on. A list of valid content types is available via the `SUPPORTED_TYPES` field in the add-ons manager.
+
+Below is an example of the process you would go through to create your own custom task locally:
+
+1. Find the location for your custom local add-ons:
+   ```
+   u@pc:~$ python3 -c 'from benchbot_addons import manager as bam; print(bam.local_addon_path())'
+   /home/ben/repos/benchbot/addons/benchbot_addons/.local/my_addons
+   ```
+2. Create the following YAML file for your task: `/home/ben/repos/benchbot/addons/benchbot_addons/.local/my_addons/tasks/my_task.yaml`
+3. Use the fields described below in the [task add-ons specification](#task-add-ons) to define your task
+4. Save the file
+
+Done. Your new custom task should now be available for use in your BenchBot system (e.g. [`benchbot_run --list-tasks`](https://github.com/qcr/benchbot)).
+
+## Sharing your custom add-ons
+
+Custom add-on content can be grouped together into an add-on package, of which there are two different types: 'official' add-ons and third-party add-ons.
+
+'Official' are add-on packages that we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-on packages through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
+
+Third-party add-on packages differ only in that we haven't looked at them, and they can be hosted anywhere on GitHub you please.
+
+Creating all add-on packages is exactly the same process, the only difference is whether the repository is inside or outside of the [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation:
 
 1. Create a new GitHub repository
 2. Add folders corresponding to the type of content your add-ons provide (i.e. an environments add-on has an `environments` directory at the root).
@@ -230,3 +255,7 @@ The following keys are supported for task add-ons:
 | `'description'`    | No       | A string describing what the task is, and how it works. Should be included if you want users to understand what challenges your task is trying to capture.                                                                  |
 | `'type'`           | No       | A string describing what robot / environment types are valid for this task. For example, a task that provides a magic image segmentation sensor would only be made available for `'sim_unreal'` type robots / environments. |
 | `'scene_count'`    | No       | Integer representing the number of scenes (i.e. environment variations required for a task). If omitted, a default value of 1 will be used for the task.                                                                    |
+
+```
+
+```
