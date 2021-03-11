@@ -180,6 +180,20 @@ Evaluation methods expect the following named functions:
 | `'evaluate'` | `fn(dict: results, list: ground_truths) -> dict` | Evaluates the performance using a `results` dictionary, and returns a dictionary of containing the scores. It also takes a list of dictionaries containing each ground truth that will be used in evaluation. |
 | `'combine'`  | `fn(list: scores) -> dict`                       | Takes a list of `scores` dictionaries, and returns an aggregate score. If this method isn't declared, [`benchbot_eval`](https://github.com/qcr/benchbot_eval) won't return a summary score.                   |
 
+### Example method add-ons
+
+A YAML file, that must in a folder called `examples` in the root of the add-on package (e.g. `examples/my_example.yaml`).
+
+The following keys are supported for example add-ons:
+
+| Key                   | Required | Description                                                                                                                                                                                                                                  |
+| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | Yes      | A string used to refer to this example (must be unique!)                                                                                                                                                                                     |
+| `native_command`      | Yes      | A string describing the command used to run your example natively, relative to the directory of this YAML file! For example running your `my_example.py` file which is in the same director as this YAML would be `python3 ./my_example.py`. |
+| `container_directory` | No       | Directory where the Dockerfile can be found to run your example in a containerised mode. If the file is not called `Dockerfile`, you must also provide the `container_filename` key with the Dockerfile's name.                              |
+| `container_filename`  | No       | Custom filename for your example's Dockerfile. `Dockerfile` in `container_directory` will be used if this key is not included.                                                                                                               |
+| `description`         | No       | A string describing what the example is and how it works. Should be included if you want users to understand how your example can be expanded.                                                                                               |
+
 ### Format definition add-ons
 
 A YAML file, that must exist in a folder called `formats` in the root of the add-on package (e.g. `formats/my_format.yaml`).
