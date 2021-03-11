@@ -325,15 +325,16 @@ def print_state():
     if not state.keys():
         print("\tNone.")
     else:
-        for k, v in state.items():
+        sorted_keys = sorted(state.keys())
+        for k in sorted_keys:
             print("\t%s (%s%s)" %
-                  (k, v['hash'][:HASH_SHORT],
-                   ', with remote content' if 'remote' in v else ''))
+                  (k, state[k]['hash'][:HASH_SHORT],
+                   ', with remote content' if 'remote' in state[k] else ''))
     print(
         "\nOur GitHub organisation (https://github.com/benchbot-addons) "
         "contains all of our official add-ons.\nThe following are available, "
         "with more details available at the above URL:")
-    for o in official_addons():
+    for o in sorted(official_addons()):
         print("\t%s" % o)
 
     print("\nIf you would like to add your community-created add-on to the "
