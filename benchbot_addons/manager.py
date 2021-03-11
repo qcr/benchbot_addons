@@ -332,10 +332,15 @@ def print_state():
                    ', with remote content' if 'remote' in state[k] else ''))
     print(
         "\nOur GitHub organisation (https://github.com/benchbot-addons) "
-        "contains all of our official add-ons.\nThe following are available, "
-        "with more details available at the above URL:")
-    for o in sorted(official_addons()):
-        print("\t%s" % o)
+        "contains all of our official add-ons.\nThe following additional "
+        "official add-ons are available, with more details at the above URL:")
+    missing_officials = sorted(
+        list(set(official_addons()) - set(state.keys())))
+    if missing_officials:
+        for o in missing_officials:
+            print("\t%s" % o)
+    else:
+        print("\tNone!")
 
     print("\nIf you would like to add your community-created add-on to the "
           "official list, please follow the\ninstructions here:\n\t"
