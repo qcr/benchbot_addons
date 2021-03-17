@@ -72,22 +72,47 @@ bam.remove_addons()
 bam.remove_addon('benchbot-addons/ssu,benchbot-addons/sqa')
 ```
 
-## How to add your own add-ons
+## Creating your own add-on content
 
-There are two different types of add-ons: 'official' add-ons and third-party add-ons.
+Add-ons are designed to make it easy to add your own local content to a BenchBot installation. You can add your own local content to the "local add-ons" folder provided with your install. The location on your machine can be printed via the following:
 
-'Official' are add-ons that we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-ons through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
+```python
+from benchbot_addons import manager as bam
 
-Third-party add-ons only differ in that we haven't looked at them, and they can be hosted anywhere on GitHub you please.
+print(bam.local_addon_path())
+```
 
-Creating all add-ons is exactly the same process, the only difference is whether the repository is inside or outside of the [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation:
+BenchBot expects add-on content to be in named folders denoting the type of content. For example, robots must be in a folder called `'robots'`, tasks in a folder called `'tasks'`, and so on. A list of valid content types is available via the `SUPPORTED_TYPES` field in the add-ons manager.
+
+Below is an example of the process you would go through to create your own custom task locally:
+
+1. Find the location for your custom local add-ons:
+   ```
+   u@pc:~$ python3 -c 'from benchbot_addons import manager as bam; print(bam.local_addon_path())'
+   /home/ben/repos/benchbot/addons/benchbot_addons/.local/my_addons
+   ```
+2. Create the following YAML file for your task: `/home/ben/repos/benchbot/addons/benchbot_addons/.local/my_addons/tasks/my_task.yaml`
+3. Use the fields described below in the [task add-ons specification](#task-add-ons) to define your task
+4. Save the file
+
+Done. Your new custom task should now be available for use in your BenchBot system (e.g. [`benchbot_run --list-tasks`](https://github.com/qcr/benchbot)).
+
+## Sharing your custom add-ons
+
+Custom add-on content can be grouped together into an add-on package, of which there are two different types: 'official' and third-party.
+
+'Official' packages are those we've verified, and are stored in our [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation. You can get a full list of official add-on packages through the `manager.official_addons()` helper function, or `benchbot_install --list-addons` script in the [BenchBot software stack](https://github.com/qcr/benchbot).
+
+Third-party add-on packages differ only in that we haven't looked at them, and they can be hosted anywhere on GitHub you please.
+
+Creating all add-on packages is exactly the same process, the only difference is whether the repository is inside or outside of the [benchbot-addons](https://github.com/benchbot-addons) GitHub organisation:
 
 1. Create a new GitHub repository
 2. Add folders corresponding to the type of content your add-ons provide (i.e. an environments add-on has an `environments` directory at the root).
 3. Add YAML / JSON files for your content, and make sure they match the corresponding format specification from the section below
 4. Add in any extra content your add-on may require: Python files, simulator binaries, images, etc. (if your add-on gets too big for a Git repository, you can zip the content up, host it somewhere, and use the `.remote` metadata file described in the next section)
-5. Decide if your add-on is dependent on any others, and declare any dependencies in a `.dependencies` file
-6. Push everything up to git on your default branch
+5. Decide if your package has any dependencies, and declare them using the appropriate `.dependencies*` files
+6. Push everything up to GitHub on your default branch
 
 _**Note:** it's a good idea to only include one type of add-on per repository as it makes your add-on package more usable for others. It's not a hard rule though, so feel free to add multiple folders to your add-on if you require._
 
@@ -154,6 +179,20 @@ Evaluation methods expect the following named functions:
 | ------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `'evaluate'` | `fn(dict: results, list: ground_truths) -> dict` | Evaluates the performance using a `results` dictionary, and returns a dictionary of containing the scores. It also takes a list of dictionaries containing each ground truth that will be used in evaluation. |
 | `'combine'`  | `fn(list: scores) -> dict`                       | Takes a list of `scores` dictionaries, and returns an aggregate score. If this method isn't declared, [`benchbot_eval`](https://github.com/qcr/benchbot_eval) won't return a summary score.                   |
+
+### Example method add-ons
+
+A YAML file, that must in a folder called `examples` in the root of the add-on package (e.g. `examples/my_example.yaml`).
+
+The following keys are supported for example add-ons:
+
+| Key                   | Required | Description                                                                                                                                                                                                                                  |
+| --------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`                | Yes      | A string used to refer to this example (must be unique!)                                                                                                                                                                                     |
+| `native_command`      | Yes      | A string describing the command used to run your example natively, relative to the directory of this YAML file! For example running your `my_example.py` file which is in the same director as this YAML would be `python3 ./my_example.py`. |
+| `container_directory` | No       | Directory to be used for Docker's build context. The submission process will automatically look for a file called `Dockerfile` in that directory unless the `'container_filename'` key is also provided.                                     |
+| `container_filename`  | No       | Custom filename for your example's Dockerfile. `Dockerfile` in `container_directory` will be used if this key is not included. This path is relative to this YAML file, **not** `'container_directory'`.                                     |
+| `description`         | No       | A string describing what the example is and how it works. Should be included if you want users to understand how your example can be expanded.                                                                                               |
 
 ### Format definition add-ons
 
@@ -226,7 +265,8 @@ The following keys are supported for task add-ons:
 | `'name'`           | Yes      | A string used to refer to this task (must be unique!).                                                                                                                                                                      |
 | `'actions'`        | Yes      | A list of named connections to be provided as actions through the [BenchBot API](https://github.com/qcr/benchbot_api). Running this task will fail if the robot doesn't provide these named connections.                    |
 | `'observations'`   | Yes      | A list of named connections to be provided as observations through the [BenchBot API](https://github.com/qcr/benchbot_api). Running this task will fail if the robot doesn't provide these named connections.               |
-| `'results_format'` | Yes      | A string naming the format for results. The format must be installed, as [BenchBot API](https://github.com/qcr/benchbot_api) will use the format's functions to provide the user with empty results.                        |
+| `'localisation'`   | No       | A string describing the level of localisation. Only supported values currently are `'ground_truth'` and `'noisy'`. The default value is '`ground_truth`'.                                                                   |
+| `'results_format'` | No       | A string naming the format for results. The format must be installed, as [BenchBot API](https://github.com/qcr/benchbot_api) will use the format's functions to provide the user with empty results.                        |
 | `'description'`    | No       | A string describing what the task is, and how it works. Should be included if you want users to understand what challenges your task is trying to capture.                                                                  |
 | `'type'`           | No       | A string describing what robot / environment types are valid for this task. For example, a task that provides a magic image segmentation sensor would only be made available for `'sim_unreal'` type robots / environments. |
 | `'scene_count'`    | No       | Integer representing the number of scenes (i.e. environment variations required for a task). If omitted, a default value of 1 will be used for the task.                                                                    |

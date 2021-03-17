@@ -19,9 +19,11 @@ FILENAME_DEPENDENCIES = '.dependencies'
 FILENAME_PYTHON_DEPENDENCIES = '.dependencies-python'
 FILENAME_REMOTE = '.remote'
 
+HASH_SHORT = 8
+
 KEY_FILE_PATH = '_file_path'
 
-HASH_SHORT = 8
+LOCAL_NAME = '.local/my_addons'
 
 SUPPORTED_TYPES = [
     'batches', 'environments', 'evaluation_methods', 'examples', 'formats',
@@ -34,10 +36,6 @@ URL_OFFICIAL_ADDONS = 'https://github.com/benchbot-addons'
 def _abs_path(path):
     return (path if path.startswith('/') else os.path.abspath(
         os.path.join(os.path.dirname(__file__), path)))
-
-
-def _addon_path(repo_user, repo_name):
-    return os.path.join(_install_location(), repo_user, repo_name)
 
 
 def _install_location():
@@ -62,6 +60,22 @@ def _validate_type(type_string):
         raise ValueError(
             "Resource type '%s' is not one of the supported types:\n\t%s" %
             (type_string, SUPPORTED_TYPES))
+
+
+def addon_path(repo_user, repo_name):
+    return os.path.join(_install_location(), repo_user, repo_name)
+
+
+def dirty_addons():
+    dirty = []
+    for n in get_state().keys():
+        _, repo_user, repo_name, _ = _parse_name(n)
+        if (run('[[ -z $(git status -s --porcelain) ]]',
+                shell=True,
+                executable='/bin/bash',
+                cwd=addon_path(repo_user, repo_name)).returncode != 0):
+            dirty.append(n)
+    return dirty
 
 
 def dump_state(state):
@@ -164,9 +178,13 @@ def load_yaml_list(filenames_list):
     return [load_yaml(f) for f in filenames_list]
 
 
+def local_addon_path():
+    return addon_path(*LOCAL_NAME.split('/'))
+
+
 def install_addon(name):
     url, repo_user, repo_name, name = _parse_name(name)
-    install_path = _addon_path(repo_user, repo_name)
+    install_path = addon_path(repo_user, repo_name)
 
     print("Installing addon '%s' in '%s':" % (name, _install_location()))
 
@@ -283,8 +301,8 @@ def install_external_deps(dry_mode=False):
     state = get_state()
     deps = []
     for a in ([
-            _addon_path(_parse_name(k)[1],
-                        _parse_name(k)[2]) for k in state.keys()
+            addon_path(_parse_name(k)[1],
+                       _parse_name(k)[2]) for k in state.keys()
     ]):
         fn = os.path.join(a, FILENAME_PYTHON_DEPENDENCIES)
         if os.path.exists(fn):
@@ -307,16 +325,22 @@ def print_state():
     if not state.keys():
         print("\tNone.")
     else:
-        for k, v in state.items():
+        sorted_keys = sorted(state.keys())
+        for k in sorted_keys:
             print("\t%s (%s%s)" %
-                  (k, v['hash'][:HASH_SHORT],
-                   ', with remote content' if 'remote' in v else ''))
+                  (k, state[k]['hash'][:HASH_SHORT],
+                   ', with remote content' if 'remote' in state[k] else ''))
     print(
         "\nOur GitHub organisation (https://github.com/benchbot-addons) "
-        "contains all of our official add-ons.\nThe following are available, "
-        "with more details available at the above URL:")
-    for o in official_addons():
-        print("\t%s" % o)
+        "contains all of our official add-ons.\nThe following additional "
+        "official add-ons are available, with more details at the above URL:")
+    missing_officials = sorted(
+        list(set(official_addons()) - set(state.keys())))
+    if missing_officials:
+        for o in missing_officials:
+            print("\t%s" % o)
+    else:
+        print("\tNone!")
 
     print("\nIf you would like to add your community-created add-on to the "
           "official list, please follow the\ninstructions here:\n\t"
@@ -343,7 +367,7 @@ def outdated_addons():
     }
     outdated = []
     for a in state.keys():
-        cwd = _addon_path(*_parse_name(a)[1:3])
+        cwd = addon_path(*_parse_name(a)[1:3])
         if (run('git rev-parse HEAD', cwd=cwd, **
                 cmd_args).stdout.decode('utf8').strip() !=
                 run('git rev-parse origin/HEAD', cwd=cwd, **
@@ -354,7 +378,7 @@ def outdated_addons():
 
 def remove_addon(name):
     url, repo_user, repo_name, name = _parse_name(name)
-    install_path = _addon_path(repo_user, repo_name)
+    install_path = addon_path(repo_user, repo_name)
     install_parent = os.path.dirname(install_path)
 
     # Confirm the addon exists
