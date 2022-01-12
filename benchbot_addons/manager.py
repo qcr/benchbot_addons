@@ -309,8 +309,7 @@ def install_external_deps(dry_mode=False):
                 deps.extend([l.strip() for l in f if l.strip()])
 
     # Issue the pip install command
-    pip_string = 'pip%s install %s' % (sys.version_info.major, " ".join(
-        list(set(deps))))
+    pip_string = 'pip3 install %s' % " ".join(list(set(deps)))
     if deps and not dry_mode:
         print("Running the following pip install command:")
         print("\t%s\n" % pip_string)
