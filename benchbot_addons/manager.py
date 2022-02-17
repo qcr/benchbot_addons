@@ -162,8 +162,7 @@ def load_functions(data, key='functions'):
     sys.path.insert(0, os.path.dirname(data[KEY_FILE_PATH]))
     ret = {
         k: getattr(importlib.import_module(re.sub('\.[^\.]*$', "", v)),
-                   re.sub('^.*\.', "", v))
-        for k, v in data[key].items()
+                   re.sub('^.*\.', "", v)) for k, v in data[key].items()
     }
     del sys.path[0]
     return ret
@@ -235,10 +234,10 @@ def install_addon(name):
             print("\tFound remote content to install to '%s': %s" %
                   (target, remote))
             state = get_state()
-            if (name not in state or 'remote' not in state[name]
-                    or state[name]['remote'] != remote
-                    or 'remote_target' not in state[name]
-                    or state[name]['remote_target'] != target):
+            if (name not in state or 'remote' not in state[name] or
+                    state[name]['remote'] != remote or
+                    'remote_target' not in state[name] or
+                    state[name]['remote_target'] != target):
                 print("\tRemote content is new. Fetching ...")
                 if (run('wget "%s" -O ".tmp.zip"' % remote, **{
                         **cmd_args, 'stdout': None,
