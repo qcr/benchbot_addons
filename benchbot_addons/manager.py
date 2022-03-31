@@ -66,6 +66,13 @@ def addon_path(repo_user, repo_name):
     return os.path.join(_install_location(), repo_user, repo_name)
 
 
+def check_reqs():
+    if run('which unzip').returncode != 0:
+        raise RuntimeError(
+            "'unzip' is required and wasn't found with 'which'. Please resolve."
+        )
+
+
 def dirty_addons():
     dirty = []
     for n in get_state().keys():
@@ -286,6 +293,7 @@ def install_addon(name):
 
 
 def install_addons(string, remove_extras=False):
+    check_reqs()
     installed_list = []
     for a in string.split(','):
         installed_list.extend(install_addon(a))
