@@ -67,7 +67,7 @@ def addon_path(repo_user, repo_name):
 
 
 def check_reqs():
-    if run('which unzip').returncode != 0:
+    if run('which unzip', shell=True, executable='/bin/bash').returncode != 0:
         raise RuntimeError(
             "'unzip' is required and wasn't found with 'which'. Please resolve."
         )
