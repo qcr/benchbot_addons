@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='benchbot_addons',
-      version='2.1.1',
+      version='2.2.1',
       author='Ben Talbot',
       author_email='b.talbot@qut.edu.au',
       description=
