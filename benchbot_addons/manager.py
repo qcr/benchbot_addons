@@ -187,6 +187,17 @@ def load_yaml_list(filenames_list):
 def local_addon_path():
     return addon_path(*LOCAL_NAME.split('/'))
 
+def google_wget_str(gid):
+    str = 'wget --load-cookies /tmp/cookies.txt '+\
+          '"https://docs.google.com/uc?export=download&confirm='+\
+          '$(wget --quiet --save-cookies /tmp/cookies.txt '+\
+          '--keep-session-cookies --no-check-certificate '+\
+          '\'https://docs.google.com/uc?export=download&id=%s\'' % gid +\
+          ' -O- | sed -rn \'s/.*confirm=([0-9: A-Za-z_]+)'+\
+          '.*/\1\n/p\')&id=%s" -O .tmp.zip && rm -rf ' % gid +\
+          '/tmp/cookies.txt'
+    return str
+
 
 def install_addon(name):
     url, repo_user, repo_name, name = _parse_name(name)
@@ -246,7 +257,14 @@ def install_addon(name):
                     'remote_target' not in state[name] or
                     state[name]['remote_target'] != target):
                 print("\tRemote content is new. Fetching ...")
-                if (run('wget "%s" -O ".tmp.zip"' % remote, **{
+                # Hacky google drive download check and command
+                # Should find better long-term storage after CloudStor
+                if 'google' in remote:
+                    gid = re.search('/d/(.*)/view', remote).group(1)
+                    wget_str = google_wget_str(gid)
+                else:
+                    wget_str ='wget "%s" -O ".tmp.zip"' % remote
+                if (run(wget_str, **{
                         **cmd_args, 'stdout': None,
                         'stderr': None
                 }).returncode != 0):
